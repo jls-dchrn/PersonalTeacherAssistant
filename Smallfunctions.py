@@ -21,6 +21,7 @@ class gpt():
     # Hayato
     # Takumi
     def login():
+        print("This is test")
         pass
     
 
