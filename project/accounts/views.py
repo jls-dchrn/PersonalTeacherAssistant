@@ -3,6 +3,11 @@ from .forms import SignupForm, LoginForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = /home/hayato/PersonalTeacherAssistant/project
 
 def signup_view(request):
     if request.method == 'POST':
@@ -10,6 +15,15 @@ def signup_view(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             form.save()
+            user_name = form.cleaned_data.get('username')
+
+            path = str(BASE_DIR)+'/contexts/'+str(user_name)+'.txt'
+            f = open(path, 'w')
+            f.write('')
+            f.close()
+
+            return redirect(to='/login/')
+
 
     else:
         form = SignupForm()
