@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>yourpage</title>
+</head>
+<body>
+    <!-- <h1>This page is obtained in app!</h1> -->
+    <h1>Welcom {{user.username}}!!</h1>
+    <h2>YOU</h2>
+    <h2 Align="right">GPT</h2>
+    <!-- <p>email:{{user.email}}</p>
+    <p>user joined date:{{user.date_joined}}</p> -->
+    {% for col in past_info %}
+        {% if  col.role == "user" %}
+            {% if  col.type == "text" %}
+                <p>{{col.text}}</p>
+            {% else %}
+                <p>this is updated image</p>
+                <img src={{col.path}}>
+            {% endif %}
+        {% else %}
+            <p Align="right">{{col.text}}</p>
+        {% endif %}
+    {% endfor %}
+
+    <form action="{% url 'user' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+            <p><input type="hidden" id="past_info" name="past_info" value="{{past_info}}"></p>
+            <!-- <p>text:<input type="text" id="new_info" name="new_info"></p>
+            <input type="file" id="imagefile" name="imagefile" accept="image/png, image/jpeg" /> -->
+            {{ form.as_p }}
+            <p><input type="submit" value="submit"></p>
+    </form>
+
+
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+            <p><input type="submit" value="Logout"></p>
+    </form>
+</body>
+
+</html>

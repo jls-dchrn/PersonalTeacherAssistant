@@ -45,7 +45,7 @@ def login_view(request):
             if user:
                 login(request, user)
                 if next == 'None':
-                    return redirect(to='/user/')
+                    return redirect(to='/app/user/')
                 else:
                     return redirect(to=next)
     else:
