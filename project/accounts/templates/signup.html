@@ -2,19 +2,19 @@
 <html lang="ja">
 <head>
     <meta charset="utf-8">
-    <title>ユーザー登録</title>
+    <title>SignUp Page</title>
 </head>
 <body>
-    <h1>ユーザー登録</h1>
+    <h1>SignUp Page</h1>
     <form action="{% url 'signup' %}" method="post">
     {% csrf_token %}
         {{ form.as_p }}
-        <p><input type="submit" value="登録"></p>
+        <p><input type="submit" value="register"></p>
     </form>
 
     <form action="{% url 'login' %}" method="post">
         {% csrf_token %}
-            <p><input type="submit" value="戻る"></p>
+            <p><input type="submit" value="back"></p>
     </form>
 </body>
 </html>

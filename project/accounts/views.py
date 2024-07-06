@@ -17,7 +17,7 @@ def signup_view(request):
             form.save()
             user_name = form.cleaned_data.get('username')
 
-            path = str(BASE_DIR)+'/contexts/'+str(user_name)+'.txt'
+            path = str(BASE_DIR)+'/contexts/'+str(user_name)+'.csv'
             f = open(path, 'w')
             f.write('')
             f.close()
