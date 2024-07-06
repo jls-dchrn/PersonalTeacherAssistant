@@ -15,6 +15,7 @@ from os import path as os_path
 from os import environ
 
 environ["OPENAI_API_KEY"] = "ENTER_API_KEY"
+
 sys_path.append(os_path.dirname(os_path.dirname(os_path.abspath(__file__))))
 
 
@@ -23,39 +24,60 @@ class gpt:
     def __init__(self):
         self.model = "gpt-4o"
         self.client = OpenAI()
-        self.sessionmemory = ""
+        self.sessionmemory = []
         self.cost_calculator = CostCalculator()
         # Use "Export MI_CHATGPT_APIKEY=xxxxxxxxxxxxxxx" to get api access
+    
+    def memoryToString(self):
+        text = ""
+        for dict in self.sessionmemory:
+            text +=dict["content"] + "\n"
+        return text
 
     # Input name of User as string
     def _summarize(self, user):
         # Context of user that will be updated:
         usercontext = []
 
+        # Prompt for summary after a teaching session
+        summaryprompt = f"""You are a personal teaching assistant, and you have just finished tutoring a session.
+        You now want to adapt your future teaching methods to adopt to this specific student.
+        You should respond in less than 100 words.
+        This is the current session memory: {self.memoryToString()}."""
+
         # First find the user's context file or create a new
         contextfile = "/contextfiles/CF" + user + ".csv"
+
+        # If there is already some context add it to the summary prompt
         if os.path.exists(contextfile):
             with open(contextfile, "r") as f:
                 usercontext = list(csv.reader(f))
+                summaryprompt += """Expand your knowledge of the student and what teaching methods they respond to, to the following csv file: {usercontext}"""
+            
         else:
             with open(contextfile, "w") as f:
                 pass
 
-        # Prompt for summary after a teaching session
-        summaryprompt = f"""You are a personal teaching assistant, and you have just finished tutoring a session.
-        You now want to adapt your future teaching methods to adopt to this specific student.
-        This is the current session memory: {self.sessionmemory}.
-        Expand your knowledge of the student and what teaching methods they respond to, to the following csv file: {usercontext}"""
+        message = {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": summaryprompt,
+                            }
+                        ],
+                    }
 
         # get the response from the model
-        response = self.sendMessage(prompt=summaryprompt)
-        summary = response.choices[0].text.strip()
+        summary = self.basicSendMessage(message=message,max_tokens=200)
 
         # Update the user context and write to the context file:
         usercontext.append([summary])
         with open(contextfile, "w", newline='') as f:
             writer = csv.writer(f)
             writer.writerows(usercontext)
+    
+
 
     # resize image and file format to standard format
     # Jules
@@ -98,10 +120,19 @@ class gpt:
         """
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
+    
+    # basic call to GPT API
+    def basicSendMessage(self,message, max_tokens):
+        response = self.client.chat.completions.create(
+            model=self.model,
+            
+            messages= message,
+            max_tokens=max_tokens
+        )
+        return response.choices[0].message.content
+    
 
-
-    # Update the sendMessage method in SmallFunctions.py
-    def sendMessage(self, prompt=None, image_path=None, max_tokens=50, detail="high"):
+    def sendMessage(self, prompt=None, image_path=None, max_tokens=500, detail="high"):
         """
         Sends a request to the OpenAI GPT-4 model using the openai library. Handles text, image, and text+image inputs.
         
@@ -116,15 +147,11 @@ class gpt:
             image_base64 = self.imagePrep(image_path)
 
             if prompt:
-
-                
                 # Handle text + image
                 input_tokens = len(prompt.split())
                 self.cost_calculator.calculate_token_cost(input_tokens, "input")
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    
-                    messages=[
+                # Template for text+ image
+                self.sessionmemory.append(
                     {
                         "role": "user",
                         "content": [
@@ -137,16 +164,14 @@ class gpt:
                             "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
                             }
                         ],
-                    }],
-                    max_tokens=max_tokens
+                    }
                 )
+                response = self.basicSendMessage(max_tokens=max_tokens, message=self.sessionmemory)
             else:
                 # Handle image only
                 self.cost_calculator.calculate_image_cost(image_path, detail)
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    
-                    messages=[
+                # Template for image only
+                self.sessionmemory.append(
                     {
                         "role": "user",
                         "content": [
@@ -155,19 +180,17 @@ class gpt:
                             "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
                             }
                         ],
-                    }],
-                    max_tokens=max_tokens
+                    }
                 )
+            response = self.basicSendMessage(max_tokens=max_tokens, message=self.sessionmemory)
             # we don't want to keep in memory multiple example of resized image. Once the request is send we delete it
             os.remove("tmp_image.jpg")
         else:
             # Handle text only
             input_tokens = len(prompt.split())
             self.cost_calculator.calculate_token_cost(input_tokens, "input")
-            response = self.client.chat.completions.create(
-                    model=self.model,
-                    
-                    messages=[
+            # Template for image only
+            self.sessionmemory.append(
                     {
                         "role": "user",
                         "content": [
@@ -176,14 +199,15 @@ class gpt:
                                 "text": prompt,
                             }
                         ],
-                    }],
-                    max_tokens=max_tokens
+                    }
                 )
-        
-        output_tokens = len(response.choices[0].message.content.split())
+        response = self.basicSendMessage(max_tokens=max_tokens, message=self.sessionmemory)
+
+        # calculate the tokens of the answer
+        output_tokens = len(response.split())
         self.cost_calculator.calculate_token_cost(output_tokens, "output")
         
-        return response.choices[0].message.content
+        return response
 
 
 # Example usage:
@@ -191,14 +215,14 @@ if __name__ == "__main__":
     # Initialize GPT instance
     gpt_instance = gpt()
 
-    # Send text message
-    response_text = gpt_instance.sendMessage(prompt='Hello, how are you?')
-    print(response_text)
-
     # Send image message
     response_image = gpt_instance.sendMessage(image_path='img/test1.jpg')
     print(response_image)
 
+    # Send text message
+    response_text = gpt_instance.sendMessage(prompt='Describe the image.')
+    print(response_text)
+
     # Send text + image message
-    response_text_image = gpt_instance.sendMessage(prompt='Describe this image.', image_path='img/test1.jpg')
+    response_text_image = gpt_instance.sendMessage(prompt='Explain me the link of this image with the previous one', image_path='img/test2.jpg')
     print(response_text_image)
