@@ -22,7 +22,7 @@ def signup_view(request):
             f.write('')
             f.close()
 
-            return redirect(to='/login/')
+            return redirect(to='/')
 
 
     else:
