@@ -7,6 +7,10 @@ from .forms import UploadFileForm
 from django.core.files.storage import FileSystemStorage
 from PIL import Image
 
+import sys
+import os
+sys.path.append(os.pardir)
+from Smallfunctions import gpt
 
 # Create your views here.
 class UserView(LoginRequiredMixin,TemplateView):
@@ -27,7 +31,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         user = self.request.user
         form = UploadFileForm(request.POST, request.FILES)
         # file_obj = request.FILES['file']
-        # print(file_obj)
+        print(request.POST)
         new_info = str(request.POST['text'])
         past_info = ast.literal_eval(request.POST['past_info'])
         if 'file' in request.FILES:
