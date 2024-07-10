@@ -50,17 +50,12 @@ class gpt:
                 Here are the conclusions:
                 """
                 for line in f:
-                    context += "\n" + line[1] # add the summary and not the session id
+                    init_prompt += "\n" + line[1] # add the summary and not the session id
                 
         
         self.sessionmemory.append({
             "role" : "system",
-            "content": [
-                {
-                        "type": "text",
-                        "text": init_prompt,
-                }
-            ],
+            "content": init_prompt,
         })
 
         """
@@ -72,11 +67,7 @@ class gpt:
     def memoryToString(self):   
         text = ""
         for dict in self.sessionmemory:
-            for message in dict:
-                if 'text' in message:
-                    text +=message["text"] + "\n"
-                if 'image_url' in message:
-                    text += "image url : " + message["image_url"]["url"] +"\n"
+            text += dict["content"] + "\n"
         return text
 
     # Input name of User as string
@@ -90,7 +81,7 @@ class gpt:
         Some of the possible teaching method classifications could be the following:
         Concrete Examples, Visual Aids, Interactive Activities, Analogies and Metaphors, Step-by-Step Breakdown,
         Stories and Narratives, Scaffolded Questions, Simplified Language, Multisensory Approaches, Encouraging Exploration.
-        You should optimize your response for use in an LLM prompt, therefore your summary, should be conscise and precise, and it should be less than 100 words
+        You should optimize your response for use in an LLM prompt, therefore your summary, should be concise and precise, and it should be less than 100 words
         This is the current session memory: {self.memoryToString()}."""
 
 
@@ -109,12 +100,7 @@ class gpt:
 
         message = {
                         "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": summaryprompt,
-                            }
-                        ],
+                        "content": summaryprompt,
                     }
 
         # get the response from the model
@@ -171,15 +157,14 @@ class gpt:
             return base64.b64encode(image_file.read()).decode('utf-8')
     
     # basic call to GPT API
-    def basicSendMessage(self,message, max_tokens):
+    def basicSendMessage(self, message, max_tokens):
         response = self.client.chat.completions.create(
             model=self.model,
-            
-            messages= message,
+            messages=message,
             max_tokens=max_tokens
         )
         return response.choices[0].message.content
-    
+        
 
     def sendMessage(self, prompt=None, image_path=None, max_tokens=500, detail="high"):
         """
@@ -203,16 +188,7 @@ class gpt:
                 self.sessionmemory.append(
                     {
                         "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": prompt,
-                            },
-                            {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
-                            }
-                        ],
+                        "content": f"{prompt}\n![image](data:image/jpeg;base64,{image_base64})",
                     }
                 )
                 response = self.basicSendMessage(max_tokens=max_tokens, message=self.sessionmemory)
@@ -223,12 +199,7 @@ class gpt:
                 self.sessionmemory.append(
                     {
                         "role": "user",
-                        "content": [
-                            {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
-                            }
-                        ],
+                        "content": f"![image](data:image/jpeg;base64,{image_base64})",
                     }
                 )
             response = self.basicSendMessage(max_tokens=max_tokens, message=self.sessionmemory)
@@ -242,19 +213,21 @@ class gpt:
             self.sessionmemory.append(
                     {
                         "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": prompt,
-                            }
-                        ],
+                        "content": prompt,
                     }
                 )
-        response = self.basicSendMessage(max_tokens=max_tokens, message=self.sessionmemory)
+            response = self.basicSendMessage(max_tokens=max_tokens, message=self.sessionmemory)
 
         # calculate the tokens of the answer
         output_tokens = len(response.split())
         self.cost_calculator.calculate_token_cost(output_tokens, "output")
+
+        self.sessionmemory.append(
+                    {
+                        "role": "assistant",
+                        "content": response,
+                    }
+                )
         
         return response
 
@@ -262,7 +235,7 @@ class gpt:
 # Example usage:
 if __name__ == "__main__":
     # Initialize GPT instance
-    gpt_instance = gpt()
+    gpt_instance = gpt("test")
 
     # Send image message
     response_image = gpt_instance.sendMessage(image_path='img/test1.jpg')
