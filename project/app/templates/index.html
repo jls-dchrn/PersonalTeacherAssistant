@@ -69,6 +69,13 @@
         <p><input type="submit" value="submit"></p>
     </form>
 
+    <form action="{% url 'user' %}" method="post">
+        {% csrf_token %}
+        <p><input type="hidden" id="past_info" name="past_info" value="{{past_info}}"></p>
+        <p><input type="hidden" id="sum" name="sum" value="sum"></p>
+        <input type="submit" value="summarize">
+    </form>
+
 
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}

@@ -15,12 +15,21 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 
-
 # Create your views here.
 class UserView(LoginRequiredMixin,TemplateView):
     template_name = 'index.html'
     # return htmlfile from get request
+
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+        if request.method.lower() =="post":
+            gpt_instance = gpt(str(user))
+            request.gpt_instance = gpt_instance
+        return super().dispatch(request, *args, **kwargs)
+    
+
     def get_context_data(self, *args, **kwargs):
+        # global user
         user = self.request.user
         form = UploadFileForm()
         context = super().get_context_data(**kwargs)
@@ -29,39 +38,55 @@ class UserView(LoginRequiredMixin,TemplateView):
         context['form'] = form
 
         return context
-
+    
+    
     # upadate page form user text
     def post(self, request, *args, **kwargs):
         user = self.request.user
         form = UploadFileForm(request.POST, request.FILES)
         # file_obj = request.FILES['file']
         print(request.POST)
-        new_info = str(request.POST['text'])
         past_info = ast.literal_eval(request.POST['past_info'])
-        gpt_ = gpt()
-        if 'file' in request.FILES:
-            image = request.FILES['file']
-            fs = FileSystemStorage()
-            filename = fs.save(image.name, image)
-            print(filename)
-            path_from_this_file = "./media/" + filename
-            imageResize(self, path_from_this_file, path_from_this_file)
-            path = "../../../media/" + filename
-            value = {"role":"user","type":"image","path":path}
-            past_info.append(value)
-              # if user send a text and image
-            res = gpt_.sendMessage(prompt=new_info, image_path=path_from_this_file)
-        else :# if user send only a text
-            res = gpt_.sendMessage(prompt=new_info)
-            # pass
-        value = {"role":"user","type":"text","text":new_info}
-        past_info.append(value)
 
-        ## -------here is request to GPT API ----------
-        # res = "This text comes from GPT"
-        value = {"role":"gpt","type":"text","text":res}
-        ## --------------------------------------------
-        past_info.append(value)
+        gpt_instance = getattr(request, 'gpt_instance', None)
+        if not gpt_instance:
+            print('new_gpt')
+            gpt_instance = gpt(str(user))
+
+        # try:
+        #     gpt_
+        # except:
+        #     print("new gpt")
+        #     gpt_ = gpt(str(user))
+
+        if 'sum' in request.POST:
+            print("summarize!!!!!!!!")
+        else:
+            new_info = str(request.POST['text'])
+            
+            if 'file' in request.FILES:
+                image = request.FILES['file']
+                fs = FileSystemStorage()
+                filename = fs.save(image.name, image)
+                print(filename)
+                path_from_this_file = "./media/" + filename
+                imageResize(self, path_from_this_file, path_from_this_file)
+                path = "../../../media/" + filename
+                value = {"role":"user","type":"image","path":path}
+                past_info.append(value)
+                # if user send a text and image
+                res = gpt_instance.sendMessage(prompt=new_info, image_path=path_from_this_file)
+            else :# if user send only a text
+                res = gpt_instance.sendMessage(prompt=new_info)
+                # res = "This text comes from GPT"
+                # pass
+            value = {"role":"user","type":"text","text":new_info}
+            past_info.append(value)
+
+            ## -------here is request to GPT API ----------
+            value = {"role":"gpt","type":"text","text":res}
+            ## --------------------------------------------
+            past_info.append(value)
         context = {
             'user': user,
             'past_info':past_info,
