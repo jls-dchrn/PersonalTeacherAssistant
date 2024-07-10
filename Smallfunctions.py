@@ -80,14 +80,17 @@ class gpt:
         return text
 
     # Input name of User as string
-    def _summarize(self, user):
+    def _summarize(self, user, rating):
         # Context of user that will be updated:
         usercontext = []
 
         # Prompt for summary after a teaching session
         summaryprompt = f"""You are a personal teaching assistant, and you have just finished tutoring a session.
         You now want to adapt your future teaching methods to adopt to this specific student.
-        You should respond in less than 100 words.
+        Some of the possible teaching method classifications could be the following:
+        Concrete Examples, Visual Aids, Interactive Activities, Analogies and Metaphors, Step-by-Step Breakdown,
+        Stories and Narratives, Scaffolded Questions, Simplified Language, Multisensory Approaches, Encouraging Exploration.
+        You should optimize your response for use in an LLM prompt, therefore your summary, should be conscise and precise, and it should be less than 100 words
         This is the current session memory: {self.memoryToString()}."""
 
         # First find the user's context file or create a new
@@ -97,7 +100,14 @@ class gpt:
         if os.path.exists(contextfile):
             with open(contextfile, "r") as f:
                 usercontext = list(csv.reader(f))
+<<<<<<< HEAD
                 summaryprompt += f"""Expand your knowledge of the student and what teaching methods they respond to, to the following csv file: {usercontext}"""
+=======
+                summaryprompt += f"""Use this, and your previous knowledge of the student, what teaching methods does the student respond to. 
+                                    Here is your previous knowledge: {usercontext}.
+                                    In order to do this you should use the ratings on a scale of 1-5 that the student has provided here: {rating}. 
+                                    """
+>>>>>>> refs/remotes/origin/main
             
         else:
             with open(contextfile, "w") as f:

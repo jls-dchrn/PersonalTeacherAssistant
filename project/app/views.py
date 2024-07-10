@@ -11,6 +11,10 @@ import sys
 import os
 sys.path.append(os.pardir)
 from Smallfunctions import gpt
+from pathlib import Path
+from dotenv import load_dotenv
+
+
 
 # Create your views here.
 class UserView(LoginRequiredMixin,TemplateView):
@@ -34,6 +38,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         print(request.POST)
         new_info = str(request.POST['text'])
         past_info = ast.literal_eval(request.POST['past_info'])
+        gpt_ = gpt()
         if 'file' in request.FILES:
             image = request.FILES['file']
             fs = FileSystemStorage()
@@ -44,11 +49,16 @@ class UserView(LoginRequiredMixin,TemplateView):
             path = "../../../media/" + filename
             value = {"role":"user","type":"image","path":path}
             past_info.append(value)
+              # if user send a text and image
+            res = gpt_.sendMessage(prompt=new_info, image_path=path_from_this_file)
+        else :# if user send only a text
+            res = gpt_.sendMessage(prompt=new_info)
+            # pass
         value = {"role":"user","type":"text","text":new_info}
         past_info.append(value)
 
         ## -------here is request to GPT API ----------
-        res = "This text comes from GPT"
+        # res = "This text comes from GPT"
         value = {"role":"gpt","type":"text","text":res}
         ## --------------------------------------------
         past_info.append(value)
