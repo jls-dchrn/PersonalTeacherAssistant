@@ -93,24 +93,18 @@ class gpt:
         You should optimize your response for use in an LLM prompt, therefore your summary, should be conscise and precise, and it should be less than 100 words
         This is the current session memory: {self.memoryToString()}."""
 
-        # First find the user's context file or create a new
-        contextfile = "/contextfiles/CF" + user + ".csv"
 
         # If there is already some context add it to the summary prompt
-        if os.path.exists(contextfile):
-            with open(contextfile, "r") as f:
+        if os.path.exists(self.contextfile):
+            with open(self.contextfile, "r") as f:
                 usercontext = list(csv.reader(f))
-<<<<<<< HEAD
-                summaryprompt += f"""Expand your knowledge of the student and what teaching methods they respond to, to the following csv file: {usercontext}"""
-=======
                 summaryprompt += f"""Use this, and your previous knowledge of the student, what teaching methods does the student respond to. 
                                     Here is your previous knowledge: {usercontext}.
                                     In order to do this you should use the ratings on a scale of 1-5 that the student has provided here: {rating}. 
                                     """
->>>>>>> refs/remotes/origin/main
             
         else:
-            with open(contextfile, "w") as f:
+            with open(self.contextfile, "w") as f:
                 f.write("id_session;summerize")
 
         message = {
@@ -128,7 +122,7 @@ class gpt:
 
         # Update the user context and write to the context file:
         usercontext.append([summary])
-        with open(contextfile, "w", newline='') as f:
+        with open(self.contextfile, "w", newline='') as f:
             writer = csv.writer(f)
             writer.writerows(usercontext)
     
