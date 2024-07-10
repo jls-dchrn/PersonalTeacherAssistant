@@ -13,6 +13,7 @@ sys.path.append(os.pardir)
 from Smallfunctions import gpt
 from pathlib import Path
 from dotenv import load_dotenv
+import pickle
 
 
 # Create your views here.
@@ -23,6 +24,7 @@ class UserView(LoginRequiredMixin,TemplateView):
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
         if request.method.lower() =="post":
+            print("==========new_gpt_1===============")
             gpt_instance = gpt(str(user))
             request.gpt_instance = gpt_instance
         return super().dispatch(request, *args, **kwargs)
@@ -46,12 +48,27 @@ class UserView(LoginRequiredMixin,TemplateView):
         form = UploadFileForm(request.POST, request.FILES)
         # file_obj = request.FILES['file']
         print(request.POST)
+        # if "gpt_instance" in request.POST:
+        #     print("continu")
+        #     gpt_instance = request.POST['gpt_instance']
+        #     print(type(gpt_instance))
+        # else:
+        #     print('newwwww')
+        #     gpt_instance = getattr(request, 'gpt_instance', None)
+        #     print(type(gpt_instance))
+
         past_info = ast.literal_eval(request.POST['past_info'])
 
-        gpt_instance = getattr(request, 'gpt_instance', None)
-        if not gpt_instance:
-            print('new_gpt')
-            gpt_instance = gpt(str(user))
+        # if not gpt_instance:
+        #     print('==================new_gpt_2=========================')
+        gpt_instance = gpt(str(user))
+
+        try:
+            with open('./contexts/'+str(user)+'.pickle', 'rb') as f:
+                gpt_instance.sessionmemory = pickle.load(f)
+        except EOFError:
+            pass
+        print(gpt_instance.sessionmemory)
 
         # try:
         #     gpt_
@@ -90,8 +107,11 @@ class UserView(LoginRequiredMixin,TemplateView):
         context = {
             'user': user,
             'past_info':past_info,
-            'form':form
+            'form':form,
+            'gpt_instance':gpt_instance
         }
+        with open('./contexts/'+str(user)+'.pickle', 'wb') as f:
+            pickle.dump(gpt_instance.sessionmemory, f)
 
         return self.render_to_response(context)
         # return render(request, 'error.html')

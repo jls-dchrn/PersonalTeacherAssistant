@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 import os
 from pathlib import Path
+import pickle
+from Smallfunctions import gpt
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR = /home/hayato/PersonalTeacherAssistant/project
@@ -17,10 +19,14 @@ def signup_view(request):
             form.save()
             user_name = form.cleaned_data.get('username')
 
-            path = str(BASE_DIR)+'/contexts/'+str(user_name)+'.csv'
-            f = open(path, 'w')
-            f.write('')
-            f.close()
+            # path = str(BASE_DIR)+'/contexts/'+str(user_name)+'.csv'
+            # f = open(path, 'w')
+            # f.write('')
+            # f.close()
+            gpt_ = gpt(user=user_name)
+            # dill.dump(gpt_, open('../contexts'+str(user_name)+'.pickle','wb'))
+            with open('./contexts/'+str(user_name)+'.pickle', 'wb') as f:
+                pickle.dump(gpt_.sessionmemory, f)
 
             return redirect(to='/')
 

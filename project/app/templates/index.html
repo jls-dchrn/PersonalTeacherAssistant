@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <title>yourpage</title>
+    <script>window.MathJax = { MathML: { extensions: ["mml3.js", "content-mathml.js"]}};</script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <style>
         .rating {
             display: flex;
@@ -53,6 +55,7 @@
     <form action="{% url 'user' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <p><input type="hidden" id="past_info" name="past_info" value="{{past_info}}"></p>
+        <p><input type="hidden" id="gpt_instance" name="gpt_instance" value="{{gpt_instance}}"></p>
         {{ form.as_p }}
         <div class="rating">
             <input type="radio" id="star1" name="rating" value="1">
