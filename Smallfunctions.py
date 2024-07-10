@@ -21,17 +21,62 @@ sys_path.append(os_path.dirname(os_path.dirname(os_path.abspath(__file__))))
 
 class gpt:
 
-    def __init__(self):
+    def __init__(self,user):
         self.model = "gpt-4o"
         self.client = OpenAI()
         self.sessionmemory = []
+
+        """
+        -------------------------------------------------------------------------------------------------------------------------
+                                                             Init prompt
+        -------------------------------------------------------------------------------------------------------------------------
+
+        """
+
+        init_prompt = """
+        You are a personal teacher assistant. This, means that you should never provide a direct solution to his problems.
+        Rather, you will have to give him hints to help him doing his exercice and to understand the notions that it cover.
+        Your student is young so adapt your speech to his level, keep your focus on clearly and concisely explaining the problem.
+        """
+    
+        # First find the user's context file or create a new
+        self.contextfile = "/contextfiles/CF" + user + ".csv"
+        if os.path.exists(self.contextfile):
+            with open(self.contextfile, "r") as f:
+                init_prompt += """
+                Bellow are the conclusions you had with the previous sessions with this student.
+                Take in consideration when teaching him.
+
+                Here are the conclusions:
+                """
+                for line in f:
+                    context += "\n" + line[1] # add the summary and not the session id
+                
+        
+        self.sessionmemory.append({
+            "role" : "system",
+            "content": [
+                {
+                        "type": "text",
+                        "text": init_prompt,
+                }
+            ],
+        })
+
+        """
+        ------------------------------------------------------------------------------------------------------------------------
+        """
         self.cost_calculator = CostCalculator()
         # Use "Export MI_CHATGPT_APIKEY=xxxxxxxxxxxxxxx" to get api access
     
-    def memoryToString(self):
+    def memoryToString(self):   
         text = ""
         for dict in self.sessionmemory:
-            text +=dict["content"] + "\n"
+            for message in dict:
+                if 'text' in message:
+                    text +=message["text"] + "\n"
+                if 'image_url' in message:
+                    text += "image url : " + message["image_url"]["url"] +"\n"
         return text
 
     # Input name of User as string
@@ -52,11 +97,11 @@ class gpt:
         if os.path.exists(contextfile):
             with open(contextfile, "r") as f:
                 usercontext = list(csv.reader(f))
-                summaryprompt += """Expand your knowledge of the student and what teaching methods they respond to, to the following csv file: {usercontext}"""
+                summaryprompt += f"""Expand your knowledge of the student and what teaching methods they respond to, to the following csv file: {usercontext}"""
             
         else:
             with open(contextfile, "w") as f:
-                pass
+                f.write("id_session;summerize")
 
         message = {
                         "role": "user",
