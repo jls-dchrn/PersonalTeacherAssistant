@@ -46,16 +46,7 @@ class UserView(LoginRequiredMixin,TemplateView):
     def post(self, request, *args, **kwargs):
         user = self.request.user
         form = UploadFileForm(request.POST, request.FILES)
-        # file_obj = request.FILES['file']
-        print(request.POST)
-        # if "gpt_instance" in request.POST:
-        #     print("continu")
-        #     gpt_instance = request.POST['gpt_instance']
-        #     print(type(gpt_instance))
-        # else:
-        #     print('newwwww')
-        #     gpt_instance = getattr(request, 'gpt_instance', None)
-        #     print(type(gpt_instance))
+        # print(request.POST)
 
         past_info = ast.literal_eval(request.POST['past_info'])
 
@@ -63,11 +54,14 @@ class UserView(LoginRequiredMixin,TemplateView):
         #     print('==================new_gpt_2=========================')
         gpt_instance = gpt(str(user))
 
-        try:
+        if os.path.exists('./contexts/'+str(user)+'.pickle'):
             with open('./contexts/'+str(user)+'.pickle', 'rb') as f:
                 gpt_instance.sessionmemory = pickle.load(f)
-        except EOFError:
-            pass
+        # try:
+        #     with open('./contexts/'+str(user)+'.pickle', 'rb') as f:
+        #         gpt_instance.sessionmemory = pickle.load(f)
+        # except EOFError:
+        #     pass
         print(gpt_instance.sessionmemory)
 
         # try:
@@ -77,7 +71,9 @@ class UserView(LoginRequiredMixin,TemplateView):
         #     gpt_ = gpt(str(user))
 
         if 'sum' in request.POST:
-            print("summarize!!!!!!!!")
+            # print("summarize!!!!!!!!")
+            gpt_instance._summarize(user,request.POST['rating'])
+            # print(request.POST['rating'], type(request.POST['rating']))
         else:
             new_info = str(request.POST['text'])
             

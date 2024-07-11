@@ -8,7 +8,7 @@ from pathlib import Path
 import pickle
 from Smallfunctions import gpt
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR = /home/hayato/PersonalTeacherAssistant/project
 
 def signup_view(request):
@@ -67,6 +67,8 @@ def login_view(request):
 
 
 def logout_view(request):
+    user = request.user
+    os.remove('./contexts/'+str(user)+'.pickle')
     logout(request)
 
     return render(request, 'logout.html')

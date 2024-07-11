@@ -57,23 +57,23 @@
         <p><input type="hidden" id="past_info" name="past_info" value="{{past_info}}"></p>
         <p><input type="hidden" id="gpt_instance" name="gpt_instance" value="{{gpt_instance}}"></p>
         {{ form.as_p }}
-        <div class="rating">
-            <input type="radio" id="star1" name="rating" value="1">
-            <label for="star1" onclick="highlightStars(1)">&#9733;</label>
-            <input type="radio" id="star2" name="rating" value="2">
-            <label for="star2" onclick="highlightStars(2)">&#9733;</label>
-            <input type="radio" id="star3" name="rating" value="3">
-            <label for="star3" onclick="highlightStars(3)">&#9733;</label>
-            <input type="radio" id="star4" name="rating" value="4">
-            <label for="star4" onclick="highlightStars(4)">&#9733;</label>
-            <input type="radio" id="star5" name="rating" value="5">
-            <label for="star5" onclick="highlightStars(5)">&#9733;</label>
-        </div>
         <p><input type="submit" value="submit"></p>
     </form>
 
     <form action="{% url 'user' %}" method="post">
         {% csrf_token %}
+        <div class="rating">
+            <input type="radio" id="star1" name="rating" value="1" required>
+            <label for="star1" onclick="highlightStars(1)">&#9733;</label>
+            <input type="radio" id="star2" name="rating" value="2" required>
+            <label for="star2" onclick="highlightStars(2)">&#9733;</label>
+            <input type="radio" id="star3" name="rating" value="3" required>
+            <label for="star3" onclick="highlightStars(3)">&#9733;</label>
+            <input type="radio" id="star4" name="rating" value="4" required>
+            <label for="star4" onclick="highlightStars(4)">&#9733;</label>
+            <input type="radio" id="star5" name="rating" value="5" required>
+            <label for="star5" onclick="highlightStars(5)">&#9733;</label>
+        </div>
         <p><input type="hidden" id="past_info" name="past_info" value="{{past_info}}"></p>
         <p><input type="hidden" id="sum" name="sum" value="sum"></p>
         <input type="submit" value="summarize">
