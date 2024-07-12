@@ -164,5 +164,5 @@ cython_debug/
 # Django
 */migrations/
 db.sqlite3
-contexts/
+# contexts/
 media/
