@@ -19,7 +19,7 @@ environ["OPENAI_API_KEY"] = "ENTER_API_KEY"
 sys_path.append(os_path.dirname(os_path.dirname(os_path.abspath(__file__))))
 
 
-class gpt:
+class gpt():
 
     def __init__(self,user):
         self.model = "gpt-4o"
@@ -40,7 +40,7 @@ class gpt:
         """
     
         # First find the user's context file or create a new
-        self.contextfile = "/contextfiles/CF" + user + ".csv"
+        self.contextfile = "../contextfiles/CF" + user + ".txt"
         if os.path.exists(self.contextfile):
             with open(self.contextfile, "r") as f:
                 init_prompt += """
@@ -48,10 +48,11 @@ class gpt:
                 Take in consideration when teaching him.
 
                 Here are the conclusions:
-                """
-                for line in f:
-                    init_prompt += "\n" + line[1] # add the summary and not the session id
-                
+                """ + f.read()
+               
+        else:
+            with open(self.contextfile, "w") as f:
+                pass
         
         self.sessionmemory.append({
             "role" : "system",
@@ -88,29 +89,27 @@ class gpt:
         # If there is already some context add it to the summary prompt
         if os.path.exists(self.contextfile):
             with open(self.contextfile, "r") as f:
-                usercontext = list(csv.reader(f))
                 summaryprompt += f"""Use this, and your previous knowledge of the student, what teaching methods does the student respond to. 
-                                    Here is your previous knowledge: {usercontext}.
+                                    Here is your previous knowledge: {f.read()}.
                                     In order to do this you should use the ratings on a scale of 1-5 that the student has provided here: {rating}. 
                                     """
             
         else:
             with open(self.contextfile, "w") as f:
-                f.write("id_session;summerize")
+                pass
 
-        message = {
+        message = [{
                         "role": "user",
                         "content": summaryprompt,
-                    }
+                    }]
 
         # get the response from the model
         summary = self.basicSendMessage(message=message,max_tokens=200)
 
         # Update the user context and write to the context file:
-        usercontext.append([summary])
-        with open(self.contextfile, "w", newline='') as f:
-            writer = csv.writer(f)
-            writer.writerows(usercontext)
+        usercontext += summary
+        with open(self.contextfile, "a", newline='') as f:
+            f.write(summary)
     
 
 
