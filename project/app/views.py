@@ -73,6 +73,8 @@ class UserView(LoginRequiredMixin,TemplateView):
         if 'sum' in request.POST:
             # print("summarize!!!!!!!!")
             gpt_instance._summarize(user,request.POST['rating'])
+            past_info = []
+            os.remove('./contexts/'+str(user)+'.pickle')
             # print(request.POST['rating'], type(request.POST['rating']))
         else:
             new_info = str(request.POST['text'])
@@ -100,14 +102,14 @@ class UserView(LoginRequiredMixin,TemplateView):
             value = {"role":"gpt","type":"text","text":res}
             ## --------------------------------------------
             past_info.append(value)
+            with open('./contexts/'+str(user)+'.pickle', 'wb') as f:
+                pickle.dump(gpt_instance.sessionmemory, f)
         context = {
             'user': user,
             'past_info':past_info,
             'form':form,
             'gpt_instance':gpt_instance
         }
-        with open('./contexts/'+str(user)+'.pickle', 'wb') as f:
-            pickle.dump(gpt_instance.sessionmemory, f)
 
         return self.render_to_response(context)
         # return render(request, 'error.html')
