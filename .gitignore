@@ -3,6 +3,7 @@ src/personalteacherassistant/__pycache__/
 src/personalteacherassistant/*/__pycache__/
 .env
 venv/
+.venv/
 src/personalteacherassistant/venv/
 users.json
 src/personalteacherassistant/users.json
