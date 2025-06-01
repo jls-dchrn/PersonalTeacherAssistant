@@ -4,9 +4,11 @@ src/personalteacherassistant/*/__pycache__/
 .env
 venv/
 src/personalteacherassistant/venv/
-user.json
-src/personalteacherassistant/user.json
+users.json
+src/personalteacherassistant/users.json
 personalteacherassistant.egg-info/
+personal_teacher_assistant.egg-info/
+src/personal_teacher_assistant.egg-info/
 src/personalteacherassistant.egg-info/
 src/personalteacherassistant/personalteacherassistant.egg-info/
 contextfiles/
