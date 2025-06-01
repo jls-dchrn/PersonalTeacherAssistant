@@ -1,0 +1,25 @@
+[project]
+name = "personal-teacher-assistant"
+version = "0.1.0"
+description = "A personal teacher assistant that helps with learning and teaching tasks."
+authors = [{ name="Jules Duchiron" }, { name="Nikolaj Meineche" }, { name="Hayato Kimura" }, { name="takumi fujimoto" }]
+dependencies = [
+    "gradio",
+    "openai",
+    "bcrypt",
+    "python-dotenv"
+]
+requires-python = ">=3.8"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+pta = "personalteacherassistant.app:main"
