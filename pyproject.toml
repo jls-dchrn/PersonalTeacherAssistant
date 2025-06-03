@@ -2,7 +2,7 @@
 name = "personal-teacher-assistant"
 version = "0.1.0"
 description = "A personal teacher assistant that helps with learning and teaching tasks."
-authors = [{ name="Jules Duchiron" }, { name="Nikolaj Meineche" }, { name="Hayato Kimura" }, { name="takumi fujimoto" }]
+authors = [{ name="Jules Duchiron" }, { name="Nikolaj Meineche" }, { name="Hayato Kimura" }, { name="Takumi Fujimoto" }]
 dependencies = [
     "gradio",
     "openai",
