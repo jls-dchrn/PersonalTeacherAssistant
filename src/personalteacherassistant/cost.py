@@ -6,8 +6,8 @@ from PIL import Image
 class CostCalculator:
     
     # GPT-4o token prices in euros
-    INPUT_TOKEN_COST = 0.03 / 1000 * 0.89  # €0.03 per 1,000 tokens for input (converted to EUR)
-    OUTPUT_TOKEN_COST = 0.06 / 1000 * 0.89  # €0.06 per 1,000 tokens for output (converted to EUR)
+    INPUT_TOKEN_COST = 0.0004 / 1000 * 0.89  # 0.40$ per 1,000,000 tokens for input (converted to EUR)
+    OUTPUT_TOKEN_COST = 0.0016 / 1000 * 0.89  # 1.60$ per 1,000,000 tokens for output (converted to EUR)
     LOW_DETAIL_IMAGE_COST = 85  # Fixed token cost for low detail images
     HIGH_DETAIL_BASE_COST = 85  # Base token cost for high detail images
     HIGH_DETAIL_TILE_COST = 170  # Token cost per 512px square tile in high detail images

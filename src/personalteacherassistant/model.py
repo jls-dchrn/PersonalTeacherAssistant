@@ -12,7 +12,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 class GPT():
 
     def __init__(self,user):
-        self.model = "gpt-4o"
+        self.model = "gpt-4.1-mini"
         self.client = openai.OpenAI()
         self.project_root = os.path.dirname(os.path.abspath(__file__))
         self.cost_calculator = CostCalculator()
@@ -59,16 +59,15 @@ class GPT():
         )
         return response.choices[0].message.content
     
-    def sendMessage(self, prompt, history, max_tokens=500):
+    def sendMessage(self, prompt, history,  image_paths=[],max_tokens=500):
+        message,input_tokens= self.process_prompt(prompt, image_paths, max_tokens=max_tokens)
         messages = [{"role": "system", "content": self.init_prompt}] 
 
         for user_msg, bot_msg in history:
             messages.append({"role": "user", "content": user_msg})
             messages.append({"role": "assistant", "content": bot_msg})
 
-        messages.append({"role": "user", "content": prompt})
-
-        input_tokens = len(prompt.split())
+        messages.append({"role": "user", "content": message})
         self.cost_calculator.calculate_token_cost(input_tokens, "input")
 
         response = self.basicSendMessage(message=messages, max_tokens=max_tokens)
@@ -223,16 +222,29 @@ class GPT():
 
     def process_prompt(self, prompt:str="", image_paths:list[str]=[],max_tokens=500, detail="high"):
         token_cost = 0
-        message = ""
-        if image_paths:
-            # Resize and encode the image
-            for image in image_paths:
-                image_base64 = self.imagePrep(image)
-                token_cost += self.cost_calculator.calculate_image_cost(image, detail)
-                message += f"![image](data:image/jpeg;base64,{image_base64})\n"
-       
-            if prompt:
-                token_cost += self.cost_calculator.calculate_token_cost(len(prompt.split()), "input")
-                message += prompt + "\n"
+
+        #Case when no image is provided
+        if not image_paths:
+            token_cost += self.cost_calculator.calculate_token_cost(len(prompt.split()), "input")
+            return prompt, token_cost
+        
+        message = []
+
+        # Resize and encode the image
+        for image in image_paths:
+            image_base64 = self.imagePrep(image)
+            token_cost += self.cost_calculator.calculate_image_cost(image, detail)
+            message.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{image_base64}",
+                    },
+                }
+            )
+    
+        if prompt:
+            token_cost += self.cost_calculator.calculate_token_cost(len(prompt.split()), "input")
+            message.append({ "type": "text", "text": prompt })
         return message, token_cost
 

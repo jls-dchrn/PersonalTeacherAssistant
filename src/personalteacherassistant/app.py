@@ -70,18 +70,20 @@ class CustomChatbot:
                         history_label = gr.Markdown("### 💬 History")
                         history_selector = gr.Dropdown(label="Previous Sessions", choices=[], interactive=True)
                         load_history_btn = gr.Button("Load Selected")
+                        save_session_title = gr.Textbox(label="Save Session As", placeholder="E.g. Fractions Lesson")
+                        save_btn = gr.Button("Save Session")
+
 
                     with gr.Column(scale=4):
                         user_info = gr.Markdown(value="✅ Logged in as: ")
                         chatbot = gr.Chatbot()
                         msg = gr.Textbox(label="Message")
                         image_input = gr.File(label="Upload Images", file_types=[".jpg", ".jpeg", ".png"], file_count="multiple")
-                        send = gr.Button("Send")
-                        clear = gr.Button("Clear")
-                        logout_btn = gr.Button("Logout")
-                        save_session_title = gr.Textbox(label="Save Session As", placeholder="E.g. Fractions Lesson")
-                        save_btn = gr.Button("Save Session")
-
+                        with gr.Row():
+                            send = gr.Button("Send")
+                            clear = gr.Button("Clear")
+                            logout_btn = gr.Button("Logout")
+                        
             """
             -------------------------------------------------------------------------------------------------
                                                     Button functions
@@ -105,8 +107,7 @@ class CustomChatbot:
             def handle_send(message, history, images):
                 if self.model:
                     img_paths = [img.name for img in images] if images else []
-                    prompt, _ = self.model.process_prompt(prompt=message, image_paths=img_paths)
-                    response = self.model.sendMessage(prompt=prompt, history=history)
+                    response = self.model.sendMessage(prompt=message, history=history, image_paths=img_paths)
                     history.append((message, response))
                     return "", None, history
                 return "", None, history
