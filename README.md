@@ -12,7 +12,7 @@ What make PTA special is that the assistant analyse how you react to the subject
 
 This project was developped by *Jules Duchiron*, *Nikolaj Meineche*, *Hayato Kimura*, and *Takumi Fujimoto*, students of **Keio University** as a project for the **Machine Intelligence** class.
 
-It was recently updated by *Jules Duchiron* recently, changing the frontend to **Gradio**.
+It was updated by *Jules Duchiron* recently, changing the frontend to **Gradio**.
 
 ---
 
