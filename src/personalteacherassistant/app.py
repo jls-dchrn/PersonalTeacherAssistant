@@ -19,7 +19,17 @@ class CustomChatbot:
     def run(self):
         session = self.auth.get_session()
 
-        with gr.Blocks(theme=gr.themes.Soft()) as demo:
+        with gr.Blocks(theme=gr.themes.Soft(), css="""
+            #first-page-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 85vh;
+                text-align: center;
+            }
+        """) as demo:
+
             gr.Markdown("# 🔐 Secure LLM with Authentication")
 
             """
@@ -28,9 +38,11 @@ class CustomChatbot:
             -------------------------------------------------------------------------------------------------
             """
             with gr.Group(visible=not session["authenticated"]) as first_page:
-                first_page_label = gr.Markdown("# Identify yourself to connect to the Personal Teacher Assistant")
-                first_page_login_btn = gr.Button("Login")
-                first_page_create_account_btn = gr.Button("Create Account")
+                with gr.Column(elem_id="first-page-container"):
+                    gr.Markdown("## 👋 Welcome to the Personal Teacher Assistant")
+                    gr.Markdown("Please log in or create an account to begin.")
+                    first_page_login_btn = gr.Button("Login",)
+                    first_page_create_account_btn = gr.Button("Create Account")
 
             """
             -------------------------------------------------------------------------------------------------
@@ -67,22 +79,23 @@ class CustomChatbot:
             with gr.Group(visible=session["authenticated"]) as chat_page:
                 with gr.Row():
                     with gr.Column(scale=1):
-                        history_label = gr.Markdown("### 💬 History")
+                        gr.Markdown("### 💬 History")
                         history_selector = gr.Dropdown(label="Previous Sessions", choices=[], interactive=True)
                         load_history_btn = gr.Button("Load Selected")
                         save_session_title = gr.Textbox(label="Save Session As", placeholder="E.g. Fractions Lesson")
                         save_btn = gr.Button("Save Session")
+                        image_input = gr.File(label="Upload Images", file_types=[".jpg", ".jpeg", ".png"], file_count="multiple")
 
 
                     with gr.Column(scale=4):
                         user_info = gr.Markdown(value="✅ Logged in as: ")
                         chatbot = gr.Chatbot()
                         msg = gr.Textbox(label="Message")
-                        image_input = gr.File(label="Upload Images", file_types=[".jpg", ".jpeg", ".png"], file_count="multiple")
+                        
                         with gr.Row():
-                            send = gr.Button("Send")
                             clear = gr.Button("Clear")
                             logout_btn = gr.Button("Logout")
+                            send = gr.Button("Send")
                         
             """
             -------------------------------------------------------------------------------------------------
